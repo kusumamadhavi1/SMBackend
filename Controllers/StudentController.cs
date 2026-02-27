@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StudentPR.DTOs.Requests;
 using StudentPR.Services;
@@ -11,62 +12,62 @@ namespace StudentPR.Controllers
     public class StudentsController : ControllerBase
     {
         private readonly StudentService studentService;
-        public StudentsController(StudentService _studentService)
+        private readonly IMapper mapper;
+        public StudentsController(StudentService _studentService,IMapper _mapper)
         {
             studentService = _studentService;
+            mapper = _mapper;
         }
         // CREATE
         [HttpPost("create")]
         public async Task<IActionResult> Create(StudentPR.Models.Student student)
         {
-            await studentService.CreateAsync(student);
+            var studentobj = mapper.Map<StudentPR.Models.Student>(student);
+            await studentService.CreateAsync(studentobj);
             return Ok(student);
         }
         // READ ALL
         [HttpGet("getAll")]
         public async Task<IActionResult> GetAll()
-
         {
             var students = await studentService.GetAllAsync();
-            return Ok(students);
+
+            var response = mapper.Map<List<StudentResponseDto>>(students);
+
+            return Ok(response);
         }
         // READ BY ID
         [HttpGet("getById/{id:int}")]
         public async Task<IActionResult> Get(int id)
         {
             var student = await studentService.GetStudentByIdAsync(id);
-            if (student == null) return NotFound();
-            var responsedto = new StudentResponseDto
-            {
-                FirstName = student.FirstName,
-                LastName = student.LastName,
-                PhoneNumber = student.PhoneNumber,
-                Address = student.Address,
-            };
 
-            return Ok(responsedto);
+            if (student == null)
+                return NotFound();
+
+            var response = mapper.Map<StudentResponseDto>(student);
+
+            return Ok(response);
         }
         // UPDATE
         [HttpPut("update/{id:int}")]
-        public async Task<IActionResult> Update(int id, StudentPR.Models.Student updated)
+        public async Task<IActionResult> Update(int id, StudentRequestDto request)
         {
-            var student = await studentService.UpdateAsync(updated, id);
-            var responsedto = new StudentResponseDto
-            {
-                FirstName = student.FirstName,
-                LastName = student.LastName,
-                PhoneNumber = student.PhoneNumber,
-                Address = student.Address,
-            };
+            var entity = mapper.Map<StudentPR.Models.Student>(request);
 
-            return Ok(responsedto);
+            var updated = await studentService.UpdateAsync(entity, id);
+
+            var response = mapper.Map<StudentResponseDto>(updated);
+
+            return Ok(response);
         }
         // DELETE
         [HttpDelete("delete/{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
-            await studentService.DeleteAsync(id);
-            return Ok();
+            var deleted = await studentService.DeleteAsync(id);
+
+            return NoContent();
         }
     }
 }

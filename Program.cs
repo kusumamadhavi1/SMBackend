@@ -1,8 +1,9 @@
-using Microsoft.EntityFrameworkCore;
-using System.Text;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using StudentPR.Mappings;
 using StudentPR.Services;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -65,7 +66,7 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<StudentService>();
-
+builder.Services.AddAutoMapper(typeof(StudentProfile));
 var app = builder.Build();
 
 app.UseCors("AllowAngular");
